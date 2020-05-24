@@ -12,7 +12,7 @@ import pandas as pd
 
 #import the train data and convert into a dataframe
 
-df = pd.read_csv('/Users/lorenzo/Desktop/Data_Mining_Proj_2020/train.csv', sep = ',')
+df = pd.read_csv('/Users/lorenzo/data_Mining_Proj_2020/Data_Mining_Proj_2020/train.csv', sep = ',')
 
 count_row = df.shape[0]
 
@@ -23,6 +23,15 @@ print("Number of rows of the dataset " + str(count_row))
 #Step 1) Count missing values for each attribute
 
 print(df.isnull().sum())
+
+
     
 #step 2) How to treat missing values?
+
+# Compute the statistics for each attribute that has missing values.
+rate_of_mval = (43/5719)*100
+print(rate_of_mval)
+print(df['volume_on_promo w-1'].describe().transpose())
+print(df['POS_exposed w-1'].describe().transpose())
+print(df['sales w-1'].describe().transpose())
    
