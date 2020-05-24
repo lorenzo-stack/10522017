@@ -8,7 +8,7 @@ Created on Sun May 24 09:30:27 2020
 
 #import pandas as pd
 
-import pandas as pd
+import   pandas as pd
 
 #import the train data and convert into a dataframe
 
