@@ -12,6 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+
 #import the train data and convert into a dataframe
 
 #N.B. in the csv file data are indexed starting from 2, but they actually start from 0
@@ -23,16 +24,16 @@ count_row = df.shape[0]             #Number of rows of the dataset
 
 # <---- Preproc ------>
 
-#Step 1) Count missing values for each attribute, and a missing rate
+#Step 1) Count missing values for each attribute, and compute a missing rate
 
 df.isnull().sum()    #Counting missing value for each attribute
 
-rate_of_mval = (43/5719)*100
+rate_of_mval = (43/5719)*100     #Very low
 
     
-#step 2) How to treat missing values?
+#Step 2) How to treat missing values?
 
-# Compute the statistics for each attribute that has missing values, the choice an appropriate strategy.
+# Compute the statistics for each attribute that has missing values,choice an appropriate strategy.
 
 
 df.drop(df.index[:1], inplace=True)    #Week 0 does not have a -1 week, given the high std I decided to cutoff the row
@@ -60,25 +61,34 @@ for i in range (1,5719):
         
 
 
-for sku in df.sku.unique():
-    
-    newdf = df[(df.sku == sku)]
-    
-    newdf['week'] = newdf.index
-    
-    newdf.plot(x = 'week' , y='target', kind = 'line')
-    
-    #xcoords = [185, 237]
+newdf = df[(df.scope== 1)]    #Only the sku for which the final evaluation will be done 
 
-    #for xc in xcoords:
+unique_sku = newdf.sku.unique()
 
-    #    plt.axvline(x=xc, c = "r")
-    
-    #if newdf.scope == 1:
-    
-    print("Series of the --> " + str(sku) + " sku")
-    
+period_in_weeks = list(range(0, 133)) # every sku has tha same number of weekly data
 
+xcoords = [52, 104] # one year = 52 weeks
+
+#print(len(period_in_weeks))   #To recheck that it is true
+
+#print(len(temp.index))
+
+
+for sku in unique_sku:
+    
+    print("Series of the product with sku =  " + str(sku))
+    
+    temp = newdf[(df.sku == sku)]
+    
+    temp['week'] = period_in_weeks 
+    
+    temp.plot(x = 'week' , y='target', kind = 'scatter')
+    
+    
+    for xc in xcoords:
+
+        plt.axvline(x=xc, c = "r")
+    
     plt.show()
 
 
