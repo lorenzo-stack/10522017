@@ -10,6 +10,8 @@ Created on Sun May 24 09:30:27 2020
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 
 
@@ -20,13 +22,22 @@ import matplotlib.pyplot as plt
 
 df = pd.read_csv('/Users/lorenzo/data_Mining_Proj_2020/Data_Mining_Proj_2020/train.csv', sep = ',') 
 
+corrmat = df.corr()
+plt.figure(figsize=(15,15))
+
+# Setting the default font size when plotting in notebooks (used to clear previous settings)
+sns.set_context("notebook", font_scale=1.0, rc={"lines.linewidth": 2.5})
+
+# Plot the clustermap
+sns.clustermap(corrmat, annot=True,vmax=0.9,fmt=".2f")
+
 count_row = df.shape[0]             #Number of rows of the dataset 
 
 # <---- Preproc ------>
 
 #Step 1) Count missing values for each attribute, and compute a missing rate
 
-df.isnull().sum()    #Counting missing value for each attribute
+print("New print " + str(df.isnull().sum() ))   #Counting missing value for each attribute
 
 rate_of_mval = (43/5719)*100     #Very low
 
@@ -82,7 +93,7 @@ for sku in unique_sku:
     
     temp['week'] = period_in_weeks 
     
-    temp.plot(x = 'week' , y='target', kind = 'scatter')
+    temp.plot(x = 'week' , y='target', kind = 'line')
     
     
     for xc in xcoords:
@@ -91,8 +102,6 @@ for sku in unique_sku:
     
     plt.show()
 
-
-
-
+# <---- Model ------>  why we didn't choose a clustering approach! argument
 
    
