@@ -11,6 +11,9 @@ Created on Sun May 24 09:30:27 2020
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.stats import linregress
+import numpy
+
 
 
 
@@ -80,10 +83,6 @@ period_in_weeks = list(range(0, 133)) # every sku has tha same number of weekly 
 
 xcoords = [52, 104] # one year = 52 weeks
 
-#print(len(period_in_weeks))   #To recheck that it is true
-
-#print(len(temp.index))
-
 
 for sku in unique_sku:
     
@@ -104,4 +103,31 @@ for sku in unique_sku:
 
 # <---- Model ------>  why we didn't choose a clustering approach! argument
 
-   
+#compute pearson index for the twelve time series
+    
+corr_index_list = []
+w, h = 12, 12;
+corr_index_matrix  = [[0 for x in range(w)] for y in range(h)] 
+
+
+for sku_1 in unique_sku:
+    
+    f_series = newdf[(newdf.sku == sku_1)]
+    
+    for sku_2 in unique_sku:
+        
+        s_series = newdf[(newdf.sku==sku_2)]
+        
+        corr_index_list.append(numpy.corrcoef(f_series.target,s_series.target)[0, 1])
+        
+count = 1
+        
+for x in range(11):
+    
+    for y in range(11):
+        
+        corr_index_matrix[x][y] = corr_index_list[count]
+        
+        count = count + 1
+
+print(len(corr_index_matrix))
