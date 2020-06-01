@@ -18,11 +18,13 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-#from sklearn.utils import check_arrays
+
+from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score
 
 def mean_absolute_percentage_error(y_true, y_pred): 
     y_true, y_pred = np.array(y_true), np.array(y_pred)
-    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+    return np.mean(np.abs((y_true[:, 0] - y_pred) / y_true[:, 0]))
 
 
 
@@ -160,61 +162,114 @@ del newdf['Unnamed: 0']
 #random_state=random_seed ---> ?
 
 # List of values to try for max_depth:
-max_depth_range = list(range(1, 9))
+max_depth_range = list(range(1, 13))
 
-X = newdf
-
+X = pd.DataFrame(newdf)
 y = pd.DataFrame(newdf.target)
+del X['target']
+
+random_seed=2398745
+
+# uncomment this line to see a completely different result
+# random_seed=983458690
+
+# 10-fold crossvalidation
+tenfold_xval = KFold(10, shuffle=True, random_state=random_seed)
+
 
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 # List to store the average RMSE for each value of max_depth:
 
 accuracy = []
+
+
 for depth in max_depth_range:
     
-    clf = DecisionTreeRegressor(max_depth = depth, 
-                             random_state = 0)
-    clf.fit(X_train, y_train)
-    score = clf.score(X_test, y_test)
-    accuracy.append(score)
+    clf = DecisionTreeRegressor(criterion='mae', splitter='random',  max_depth = depth)
+    
+    cv_tree = cross_val_score(clf, X_train, y_train, cv=tenfold_xval, scoring='r2')
+    
+    s_i = np.mean(cv_tree)    
+    
+    #score = clf.score(X_test, y_test)
+    accuracy.append(s_i)
 
-#Regression Tree
+acct = np.array(accuracy)
 
-dtr_model = DecisionTreeRegressor(max_depth = 5)
+idxt = np.where(acct == max(acct))
 
-dtr_model.fit(X_train, y_train)
+nselt = max_depth_range[int(idxt[0])]
 
-y_preds = dtr_model.predict(X_test)
+clf = DecisionTreeRegressor(criterion='mae', splitter='random',  max_depth = int(nselt))
 
-# Computing the Root Mean Square Error
+clf.fit(X_train,y_train.values.ravel())
 
-rmse_tree_test = (np.sqrt(mean_squared_error(y_test, dtr_model.predict(X_test))))
-
-# Computing R2 on the train set
-
-r2_score_tree_test = r2_score(y_test, dtr_model.predict(X_test))
-
-print("R2_score (test): %.3f"%r2_score_tree_test)
-
-print("RMSE: %.3f"%rmse_tree_test)
+print ("M-A-P-E") 
+print(mean_absolute_percentage_error(y_test, clf.predict(X_test)))
 
 #Random Forest
 
-regressor_rf = RandomForestRegressor(n_estimators = 500)
+nes = np.array([1, 3, 4, 7, 9, 12, 21, 29, 39, 49, 59,  70, 150, 225, 300])
+s0f = 0
+accuracyf = []
+for n in nes:
 
-regressor_rf.fit(X_train,y_train)
+    regressor_rf = RandomForestRegressor(n_estimators = n)
+    
+    cv_rf3 = cross_val_score(regressor_rf, X_train, y_train.values.ravel(), cv=tenfold_xval, scoring='r2')
+
+    s_if = np.mean(cv_rf3)
+       
+    accuracyf.append(s_if)
+    
+    
+acc = np.array(accuracyf)
+
+idx = np.where(acc == max(acc))
+
+nsel = nes[idx]
+
+regressor_rf = RandomForestRegressor(n_estimators = int(nsel))
+
+regressor_rf.fit(X_train,y_train.values.ravel())
+
+
 
 # Computing R2 on the train set
 r2_score_rf_test = r2_score(y_test, regressor_rf.predict(X_test))
 
-# Computing the Root Mean Square Error
-rmse_rf_test = (np.sqrt(mean_squared_error(y_test, regressor_rf.predict(X_test))))
-
 ### STEP 2. Print the results
 
 print("R2_score (test): %.3f"%r2_score_rf_test)
-print("RMSE: %.3f"%rmse_rf_test)
 
 print ("M-A-P-E") 
 print(mean_absolute_percentage_error(y_test, regressor_rf.predict(X_test)))
+
+
+df_test = pd.read_csv('/Users/lorenzo/data_Mining_Proj_2020/Data_Mining_Proj_2020/x_test.csv', sep = ',') 
+del df_test['pack']
+del df_test['brand']
+del df_test['Unnamed: 0']
+
+
+X_test_r = df_test
+
+df_test["target"] = regressor_rf.predict(X_test_r)
+
+for sku in unique_sku:
+    
+    print("Series of the product with sku =  " + str(sku))
+    
+    temp = df_test[(df_test.sku == sku)]
+    
+    temp.target = (temp.target-temp.target.min())/(temp.target.max()-temp.target.min())
+    
+    temp['Index'] = np.arange(0, temp.shape[0])
+    temp.plot(x = 'Index' , y='target', kind = 'line')
+    
+    for xc in xcoords:
+
+        plt.axvline(x=xc, c = "r")
+    
+    plt.show()
