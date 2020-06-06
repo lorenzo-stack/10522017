@@ -5,20 +5,14 @@ Created on Sun May 24 09:30:27 2020
 
 @author: lorenzo
 """
-
-#import pandas as pd
-
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn import preprocessing
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 
@@ -27,50 +21,35 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true[:, 0] - y_pred) / y_true[:, 0]))
 
 
+df = pd.read_csv('train.csv', sep = ',') 
 
-
-
-#import the train data and convert into a dataframe
-
-#N.B. in the csv file data are indexed starting from 2, but they actually start from 0
-
-
-df = pd.read_csv('/Users/lorenzo/data_Mining_Proj_2020/Data_Mining_Proj_2020/train.csv', sep = ',') 
 
 corrmat = df.corr()
 
-#plt.figure(figsize=(15,15))
-
-# Setting the default font size when plotting in notebooks (used to clear previous settings)
-
-#sns.set_context("notebook", font_scale=1.0, rc={"lines.linewidth": 2.5})
+plt.figure(figsize=(15,15))
 
 # Plot the clustermap
 
-#sns.clustermap(corrmat, annot=True,vmax=0.9,fmt=".2f")
+sns.clustermap(corrmat, annot=True,vmax=0.9,fmt=".2f")
 
 count_row = df.shape[0]             #Number of rows of the dataset 
 
-# <---- Preproc ------>
-
 #Step 1) Count missing values for each attribute, and compute a missing rate
 
-print("New print " + str(df.isnull().sum() ))   #Counting missing value for each attribute
+mval = df.isnull().sum() #Counting missing value for each attribute
 
-rate_of_mval = (43/5719)*100     #Very low
+rate_of_mval = (mval/5719)*100
 
     
 #Step 2) How to treat missing values?
 
 # Compute the statistics for each attribute that has missing values,choice an appropriate strategy.
 
-
 df.drop(df.index[:1], inplace=True)    #Week 0 does not have a -1 week, given the high std I decided to cutoff the row
 
 promo_stats  = df['volume_on_promo w-1'].describe().transpose()
 
 POS_exposed_stats = df['POS_exposed w-1'].describe().transpose()
-
 
 
 for i in range (1,5719):
@@ -117,14 +96,10 @@ for sku in unique_sku:
     plt.show()
 
 # <---- Model ------>  why we didn't choose a clustering approach! argument
-
-#compute pearson index for the twelve time series
     
 #I created a list where I appended all the correlation coefficient
     
 corr_index_list = []
-
-corr_index_matrix  = [[0 for x in range(11)] for y in range(11)] 
 
 
 for sku_1 in unique_sku:
@@ -137,19 +112,7 @@ for sku_1 in unique_sku:
         
         corr_index_list.append(np.corrcoef(f_series.target,s_series.target)[0, 1])
         
-#Fill a Matrix with all the coefficient in the previous list
-        
-count = 0
-        
-for x in range(11):
-    
-    for y in range(11):
-        
-        corr_index_matrix[x][y] = corr_index_list[count]
-        
-        count = count + 1
 
-#print(corr_index_matrix)
 
 
 #Model
@@ -157,9 +120,6 @@ for x in range(11):
 del newdf['pack']
 del newdf['brand']
 del newdf['Unnamed: 0']
-
-
-#random_state=random_seed ---> ?
 
 # List of values to try for max_depth:
 max_depth_range = list(range(1, 13))
@@ -169,9 +129,6 @@ y = pd.DataFrame(newdf.target)
 del X['target']
 
 random_seed=2398745
-
-# uncomment this line to see a completely different result
-# random_seed=983458690
 
 # 10-fold crossvalidation
 tenfold_xval = KFold(10, shuffle=True, random_state=random_seed)
@@ -192,7 +149,6 @@ for depth in max_depth_range:
     
     s_i = np.mean(cv_tree)    
     
-    #score = clf.score(X_test, y_test)
     accuracy.append(s_i)
 
 acct = np.array(accuracy)
@@ -236,8 +192,17 @@ regressor_rf.fit(X_train,y_train.values.ravel())
 
 
 
-# Computing R2 on the train set
+# Computing R2 on the test set
 r2_score_rf_test = r2_score(y_test, regressor_rf.predict(X_test))
+
+#Scatter plot between observed & predicted values
+
+pt = regressor_rf.predict(X_test)
+
+mx = max(max(np.array(y_test)),max( pt) )
+plt.scatter(y_test, regressor_rf.predict(X_test))
+plt.xlim(0, mx)
+plt.ylim(0, mx)
 
 ### STEP 2. Print the results
 
@@ -247,15 +212,34 @@ print ("M-A-P-E")
 print(mean_absolute_percentage_error(y_test, regressor_rf.predict(X_test)))
 
 
-df_test = pd.read_csv('/Users/lorenzo/data_Mining_Proj_2020/Data_Mining_Proj_2020/x_test.csv', sep = ',') 
+df_test = pd.read_csv('x_test.csv', sep = ',') 
+
+
 del df_test['pack']
 del df_test['brand']
+
+step = df_test['Unnamed: 0']
+
 del df_test['Unnamed: 0']
+
 
 
 X_test_r = df_test
 
-df_test["target"] = regressor_rf.predict(X_test_r)
+df_test["prediction"] = regressor_rf.predict(X_test_r)
+
+del df_test['size (GM)']
+del df_test['price']
+del df_test['volume_on_promo w-1']
+del df_test['sales w-1']
+del df_test['scope']
+del df_test["POS_exposed w-1"]
+
+df_test['Unnamed: 0'] = step
+
+df_test.set_index(['Unnamed: 0'])
+
+df_test.to_csv("submission.csv", index = False, columns = ["Unnamed: 0","sku","prediction"])
 
 for sku in unique_sku:
     
@@ -263,13 +247,14 @@ for sku in unique_sku:
     
     temp = df_test[(df_test.sku == sku)]
     
-    temp.target = (temp.target-temp.target.min())/(temp.target.max()-temp.target.min())
+    temp.prediction = (temp.prediction-temp.prediction.min())/(temp.prediction.max()-temp.prediction.min())
     
-    temp['Index'] = np.arange(0, temp.shape[0])
-    temp.plot(x = 'Index' , y='target', kind = 'line')
+    temp['week'] = np.arange(0, temp.shape[0])
+    temp.plot(x = 'week' , y='prediction', kind = 'line')
     
     for xc in xcoords:
 
         plt.axvline(x=xc, c = "r")
     
     plt.show()
+    
