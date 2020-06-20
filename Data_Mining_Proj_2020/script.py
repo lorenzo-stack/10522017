@@ -239,7 +239,7 @@ df_test['Unnamed: 0'] = step
 
 df_test.set_index(['Unnamed: 0'])
 
-df_test.to_csv("submission.csv", index = False, columns = ["Unnamed: 0","sku","prediction"])
+df_test.to_csv("Prediction.csv", index = False, columns = ["Unnamed: 0","sku","prediction"])
 
 for sku in unique_sku:
     
