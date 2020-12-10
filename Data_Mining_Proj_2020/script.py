@@ -95,7 +95,7 @@ for sku in unique_sku:
     
     plt.show()
 
-# <---- Model ------>  why we didn't choose a clustering approach! argument
+# <---- Model ------>  
     
 #I created a list where I appended all the correlation coefficient
     
@@ -204,7 +204,7 @@ plt.scatter(y_test, regressor_rf.predict(X_test))
 plt.xlim(0, mx)
 plt.ylim(0, mx)
 
-### STEP 2. Print the results
+### STEP 2. Print the results, creation of the submission file
 
 print("R2_score (test): %.3f"%r2_score_rf_test)
 
