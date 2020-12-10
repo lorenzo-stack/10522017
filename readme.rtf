@@ -1,6 +1,16 @@
  # All the files are related to the project of the course "Data Mining & Text Mining" at Politecnico Of Milan.
 
-This project is based on sales forecasting with aggregated information for different products (SKU) throughout a 3-years time window: 
+This project is related to sales forecasting, given a dataset with composite information for different products (SKU) during a 3-years period: 
 
-See assignment file for the details.
+  - Weekly data (Dec 2016 – Dec 2019).
+  - Data are available for 43 SKU but the target for the prediction is required only for 12 SKUs.
+  
+Predictions are evaluated using the MAPE (Mean Absolute Percentage Error) upon the test set, that has been given net of
+the target column.
+
+Data are divided time-wise into train and test sets this way:
+  
+  - 2 years and 6 months in the train set (Dec 2016 – July 2019).
+  - 6 months in the test set (July 2019 – Dec 2019).
+
 
