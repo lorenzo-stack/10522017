@@ -2,7 +2,20 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun May 24 09:30:27 2020
+Variable description
 
+SKU = Unique identifier for the products (int)
+Pack= Type of pack in which the product is sold (str)
+Size (GM) = Product weight float Product brand (str)
+Brand = Product brand (str)
+Price = Planned price of sale for the product in week w (float)
+POS_exposed w-1 = Number of stores in which the product was put on evidence at w-1 (int)
+Volume_on_promo w-1  = % Volume of product put on promo at w-1 (float)
+Sales w-1 = Sales of product at w-1 (lagged target) (int)
+Scope = Boolean that indicates SKUs in scope (target) (bool)
+Target = Sales of product in w int
+
+int
 @author: lorenzo
 """
 import pandas as pd
